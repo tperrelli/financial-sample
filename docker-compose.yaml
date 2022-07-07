@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  mysql:  
+    image: mysql:5.5
+    container_name: financial-db
+    volumes:
+      - .data/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    environment:
+      - "MYSQL_ROOT_PASSWORD=${DB_PASSWORD}"
+      - "MYSQL_DATABASE=${DB_DATABASE}"
+      - "MYSQL_USER=${DB_USERNAME}"
+      - "MYSQL_PASSWORD=${DB_PASSWORD}"
+
+  cache:
+    image: redis:4.0
+    container_name: financial-redis
+    command: --appendonly yes
+    volumes:
+      - .data/redis:/data
+    ports:
+      - "6379:6379"
+
+  app:
+    image: ambientum/php:7.4-nginx
+    container_name: financial-app
+    volumes:
+      - .:/var/www/app
+    ports:
+      - "88:8080"
+    links:
+      - mysql
+      - cache
